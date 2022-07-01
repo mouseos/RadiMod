@@ -1,0 +1,9 @@
+import("stdfaust.lib");
+mpx(L,R)=m+am+pilot
+with{
+    m=L+R;
+    s=L-R;
+    pilot=os.oscsin(19000)*(pilotv/100);
+    am=s*os.oscsin(48000);
+};
+pilotv=hslider("pilot",10,0,100,1);
