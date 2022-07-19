@@ -47,14 +47,15 @@ output = out_meter(vbargraph("output[unit:dB]",-25,+0));
 loudness_in=in_meter(lufs_any(2));
 loudness_out=out_meter(lufs_any(2));
 
-
-couple1(x) = couple(hgroup("band1 coupling", x));
-couple2(x) = couple(hgroup("band2 coupling", x));
-couple3(x) = couple(hgroup("band3 coupling", x));
-couple4(x) = couple(hgroup("band4 coupling", x));
-couple5(x) = couple(hgroup("band5 coupling", x));
-
-
+mbratio(x) = MB_SETUP(hgroup("MB ratio", x));
+filter(x) = MB_SETUP(hgroup("MB Filter", x));
+couple1(x) = MB_SETUP(hgroup("band1 coupling", x));
+couple2(x) = MB_SETUP(hgroup("band2 coupling", x));
+couple3(x) = MB_SETUP(hgroup("band3 coupling", x));
+couple4(x) = MB_SETUP(hgroup("band4 coupling", x));
+couple5(x) = MB_SETUP(hgroup("band5 coupling", x));
+filter_type=filter(hslider("MB Filter[style:menu{'RadiMod':0;'OPTIMOD':1}]",1,0,1,1));
+ratio=mbratio(hslider("MB Ratio", 3,1,20, 1));
 b1(x) = mb(hgroup("band1", x));
 b2(x) = mb(hgroup("band2", x));
 b3(x) = mb(hgroup("band3", x));
@@ -64,7 +65,7 @@ b5(x) = mb(hgroup("band5", x));
 //view
 graph(x) = (hgroup("[0]graph", x));
 comp_meter(x) = graph(hgroup("[2]compressor", x));
-lim_meter(x) = graph(tgroup("[3]limiter", x));
+lim_meter(x) = graph(hgroup("[3]limiter", x));
 agc_meter(x) = graph(hgroup("[1]AGC", x));
 in_meter(x) = graph(hgroup("[0]input", x));
 final_meter(x) = graph(hgroup("[4]Final", x));
@@ -83,7 +84,7 @@ AGC(x) = control_tab(vgroup("AGC", x));
 
 mb(x) = control_tab(vgroup("MB control", x));
 
-couple(x) = control_tab(vgroup("Coupling", x));
+MB_SETUP(x) = control_tab(vgroup("MB Setup", x));
 
 EQ(x) = control_tab(vgroup("Equalizer", x));
 LIMIT(x) = control_tab(vgroup("Limiter", x));
@@ -108,7 +109,7 @@ multiband_tab(x) = tgroup("[2]multiband", x);
 
 //settings
 b11=couple1(hslider("band 1>1", 100, 0,+100, 0.1)/100);
-b12=couple1(hslider("band 1>2", 70.9, 0,+100, 0.1)/100);
+b12=couple1(hslider("band 1>2", 25.9, 0,+100, 0.1)/100);
 b13=couple1(hslider("band 1>3", 0, 0,+100, 0.1)/100);
 b14=couple1(hslider("band 1>4", 0, 0,+100, 0.1)/100);
 b15=couple1(hslider("band 1>5", 0, 0,+100, 0.1)/100);
@@ -129,72 +130,85 @@ b41=couple4(hslider("band 4>1", 0, 0,+100, 0.1)/100);
 b42=couple4(hslider("band 4>2", 0, 0,+100, 0.1)/100);
 b43=couple4(hslider("band 4>3", 0, 0,+100, 0.1)/100);
 b44=couple4(hslider("band 4>4", 100, 0,+100, 0.1)/100);
-b45=couple4(hslider("band 4>5", 22, 0,+100, 0.1)/100);
+b45=couple4(hslider("band 4>5", 100, 0,+100, 0.1)/100);
 
 
 b51=couple5(hslider("band 5>1", 0, 0,+100, 0.1)/100);
 b52=couple5(hslider("band 5>2", 0, 0,+100, 0.1)/100);
 b53=couple5(hslider("band 5>3", 0, 0,+100, 0.1)/100);
-b54=couple5(hslider("band 5>4", 50, 0,+100, 0.1)/100);
+b54=couple5(hslider("band 5>4", 55.6, 0,+100, 0.1)/100);
 b55=couple5(hslider("band 5>5", 100, 0,+100, 0.1)/100);
 
-b1att=b1(hslider("b1 Attack", 32, 0,+50, 0.1)/1000);
-b2att=b2(hslider("b2 Attack", 15, 0,+50, 0.1)/1000);
-b3att=b3(hslider("b3 Attack", 11, 0,+50, 0.1)/1000);
-b4att=b4(hslider("b4 Attack", 12, 0,+50, 0.1)/1000);
-b5att=b5(hslider("b5 Attack", 15, 0,+50, 0.1)/1000);
+b1att=b1(hslider("b1 Attack", 31, 0,+50, 0.1)/1000);
+b2att=b2(hslider("b2 Attack", 24, 0,+50, 0.1)/1000);
+b3att=b3(hslider("b3 Attack", 24, 0,+50, 0.1)/1000);
+b4att=b4(hslider("b4 Attack", 23, 0,+50, 0.1)/1000);
+b5att=b5(hslider("b5 Attack", 32, 0,+50, 0.1)/1000);
 
-b1rel=b1(hslider("b1 Release", 600, 0,+2000, 0.1)/1000);
-b2rel=b2(hslider("b2 Release", 500, 0,+2000, 0.1)/1000);
-b3rel=b3(hslider("b3 Release", 550, 0,+2000, 0.1)/1000);
-b4rel=b4(hslider("b4 Release", 500, 0,+2000, 0.1)/1000);
-b5rel=b5(hslider("b5 Release", 500, 0,+2000, 0.1)/1000);
+b1rel=b1(hslider("b1 Release", 1000, 0,+2000, 0.1)/1000);
+b2rel=b2(hslider("b2 Release", 1000, 0,+2000, 0.1)/1000);
+b3rel=b3(hslider("b3 Release", 1000, 0,+2000, 0.1)/1000);
+b4rel=b4(hslider("b4 Release", 1000, 0,+2000, 0.1)/1000);
+b5rel=b5(hslider("b5 Release", 1000, 0,+2000, 0.1)/1000);
 
 
-b1thr=b1(hslider("b1 threshold", -12,-20,+20, 0.1));
-b2thr=b2(hslider("b2 threshold", -13,-20,+20, 0.1));
-b3thr=b3(hslider("b3 threshold", -13,-20,+20, 0.1));
-b4thr=b4(hslider("b4 threshold", -10,-20,+20, 0.1));
-b5thr=b5(hslider("b5 threshold", -10,-20,+20, 0.1));
+b1thr=b1(hslider("b1 threshold", -10,-20,+20, 0.1));
+b2thr=b2(hslider("b2 threshold", -10,-20,+20, 0.1));
+b3thr=b3(hslider("b3 threshold", -10.5,-20,+20, 0.1));
+b4thr=b4(hslider("b4 threshold", -8.9,-20,+20, 0.1));
+b5thr=b5(hslider("b5 threshold", -3.9,-20,+20, 0.1));
 
+b1limthr=b1(hslider("b1 limiter delta", 4,-20,+20, 0.1));
+b2limthr=b2(hslider("b2 limiter delta", 3,-20,+20, 0.1));
+b3limthr=b3(hslider("b3 limiter delta", 2,-20,+20, 0.1));
+b4limthr=b4(hslider("b4 limiter delta", 1,-20,+20, 0.1));
+b5limthr=b5(hslider("b5 limiter delta", 1,-20,+20, 0.1));
 
 AGCdrive=AGC(hslider("Drive", 10,-30,+30, 0.1));
-AGCb1att=AGC(hslider("b1 attack ", 500,0,+5000, 0.1));
+AGCb1att=AGC(hslider("b1 attack ",420,0,+5000, 0.1));
 AGCb2att=AGC(hslider("b2 attack ", 420,0,+5000, 0.1));
-AGCrel=AGC(hslider("Release", 1900,0,+5000, 0.1));
-AGCratio=AGC(hslider("Ratio", 20,1,+1000, 1));
+AGCb1rel=AGC(hslider("b1 release", 1900,0,+5000, 0.1));
+AGCb2rel=AGC(hslider("b2 release", 1900,0,+5000, 0.1));
+AGCratio=AGC(hslider("Ratio", 8,1,+1000, 1));
 AGCknee=AGC(hslider("Knee", 8,0,32, 0.1));
 AGCb1thr=AGC(hslider("b1 threshold", -10,-30,+5000, 0.1));
 AGCb2thr=AGC(hslider("b2 threshold", -10,-30,+5000, 0.1));
 
 
 
-MBdrive=mb(hslider("Drive", 4,-30,+30, 0.1));
+MBdrive=mb(hslider("Drive", 7,-30,+30, 0.1));
 MBb1out=b1(hslider("b1 out", 0,-30,+30, 0.1));
 MBb2out=b2(hslider("b2 out", 0,-30,+30, 0.1));
 MBb3out=b3(hslider("b3 out", 0,-30,+30, 0.1));
 MBb4out=b4(hslider("b4 out", 1,-30,+30, 0.1));
 MBb5out=b5(hslider("b5 out", 2,-30,+30, 0.1));
+
+MBb1knee=b1(hslider("b1 knee", 6,0,+30, 1));
+MBb2knee=b2(hslider("b2 knee", 6,0,+30, 1));
+MBb3knee=b3(hslider("b3 knee", 6,0,+30, 1));
+MBb4knee=b4(hslider("b4 knee", 5,0,+30, 1));
+MBb5knee=b5(hslider("b5 knee", 4,0,+30, 1));
+
 //eq
 //low band
 
 eq1db=EQ1(hslider("Bass Gain", 1.2,0,+12, 0.1));
 eq1freq=EQ1(hslider("Bass Frequency", 90,1,500, 0.1));
-eq1slope=EQ1(hslider("Bass Slope", 6,6,18, 6)/6);
+eq1slope=EQ1(hslider("Bass Slope[unit:db/oct]", 6,6,18, 6)/6);
 //low band
-eq2db=EQ2(hslider("Low Gain", 0,-10,+10, 0.1));
+eq2db=EQ2(hslider("Low Gain",1,-10,+10, 0.1));
 eq2freq=EQ2(hslider("Low Frequency", 20,20,500, 0.1));
-eq2width=EQ2(hslider("Low width", 0.8,0.1,20, 0.1)/6);
+eq2width=EQ2(hslider("Low width[unit:Oct]", 0.8,0.1,20, 0.1)/6);
 //mid band
-eq3db=EQ3(hslider("Mid Gain", 0,-10,+10, 0.1));
-eq3freq=EQ3(hslider("Mid Frequency", 250,250,600, 0.1));
-eq3width=EQ3(hslider("Mid width", 0.8,0.1,20, 0.1)/6);
+eq3db=EQ3(hslider("Mid Gain", 1.5,-10,+10, 0.1));
+eq3freq=EQ3(hslider("Mid Frequency", 473,250,600, 0.1));
+eq3width=EQ3(hslider("Mid width[unit:Oct]", 0.8,0.1,20, 0.1)/6);
 //high band
-eq4db=EQ4(hslider("High Gain", 1.2,-10,+10, 0.1));
+eq4db=EQ4(hslider("High Gain", 1.4,-10,+10, 0.1));
 eq4freq=EQ4(hslider("High Frequency", 10400,1000,15000, 0.1));
-eq4width=EQ4(hslider("High width", 5.9,0.1,20, 0.1)/6);
+eq4width=EQ4(hslider("High width[unit:Oct]", 5.9,0.1,20, 0.1)/6);
 //brilliance
-brilliance=EQ5(hslider("Brilliance", 4,0,20, 0.1));
+brilliance=EQ5(hslider("Brilliance", 3,0,20, 0.1));
 
 EQ1(x) = EQ(hgroup("Low Shelf Equalizer", x));
 EQ2(x) = EQ(hgroup("Low Band Equalizer", x));
@@ -203,12 +217,12 @@ EQ4(x) = EQ(hgroup("High Band Equalizer", x));
 EQ5(x) = EQ(hgroup("Brilliance", x));
  
 //bass clipper
-MBLimThr=LIMIT(hslider("Multiband Limit", -3,-20,+20, 0.1));
+MBLimThr=LIMIT(hslider("Multiband Limit", -5,-20,+20, 0.1));
 BassClipThr=LIMIT(hslider("Bass Clipper Threshold", 0,-30,+30, 0.1));
-FinalDrive=LIMIT(hslider("Final limiter Drive", 0,-30,+30, 0.1));
+FinalDrive=LIMIT(hslider("Final limiter Drive", 7,-30,+30, 0.1));
 FinalThr=LIMIT(hslider("Final limiter Threshold", 0,-30,+30, 0.1));
 FinalLoudness=LIMIT(hslider("Loudness", -10,-20,+20, 0.1));
 
 //preemph
-pre_emph_on = FM(hslider("Pre-Emph 50[style:radio{'ON':1;'OFF':0}]",0,0,1,1));
-mpx_on = FM(hslider("MPX[style:radio{'ON':1;'OFF':0}]",0,0,1,1));
+pre_emph_on = FM(hslider("Pre-Emph 50[style:menu{'ON':1;'OFF':0}]",0,0,1,1));
+mpx_on = FM(hslider("MPX[style:menu{'ON':1;'OFF':0}]",0,0,1,1));
