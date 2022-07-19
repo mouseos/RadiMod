@@ -148,8 +148,8 @@ with{
     colev=
 //      comp_st_link(20,athresh,aatt,arel,st_cop,aopt,a,b),
 //      comp_st_link(20,athresh,aatt+0.1,arel+0.5,st_cop,aopt,c,d)
-compST(AGCratio, AGCb2thr, AGCb2att/1000, AGCrel/1000, AGCknee, 0,a, b ),
-compST(AGCratio, AGCb1thr, AGCb1att/1000, AGCrel/1000, AGCknee, 0,c, d )
+compST(AGCratio, AGCb2thr, AGCb2att/1000, AGCb2rel/1000, AGCknee, 0,a, b ),
+compST(AGCratio, AGCb1thr, AGCb1att/1000, AGCb1rel/1000, AGCknee, 0,c, d )
         :par(u,4,ba.linear2db):_,_,_,_:
         comp_cop;
         //a,b,c,d,e,f,g,h,i,j;
@@ -186,14 +186,16 @@ oct2q(x)=sqrt(2^x)/(2^x-1);
 eq=(fi.low_shelf(eq1db,eq1freq):fi.peak_eq_cq(eq2db,eq2freq,eq2width):fi.peak_eq_cq(eq3db,eq3freq,eq3width):fi.peak_eq_cq(eq4db,eq4freq,oct2q(eq4width)));
 eqst=eq,eq;
 //multiband 
-fc1=100; fc2=400; fc3=1000; fc4=3700; fc5=6200;
-multiband=fi.filterbank(3,(fc1,fc2,fc3,fc4,fc5))
-:multiband_fix
+
+switch(x,y,n)=ba.if((n==0),x,y);
+fc1=switch(100,100,filter_type); fc2=switch(400,520,filter_type); fc3=switch(1000,1800,filter_type); fc4=switch(3700,6000,filter_type);
+multiband=fi.filterbank(3,(fc1,fc2,fc3,fc4))
+
 ;
 
 multiband_fix(u,v,w,x,y,z)=(u+v,w,x,y,z);
 thresh=-10;
-ratio=8;
+
 st_cop=100;
 att=30/1000;
 rel=1000/1000;
@@ -207,11 +209,11 @@ mb_st=x,y:multiband,multiband:ro.interleave(5,2):stg(brilliance),_,_,_,_,_,_,_,_
 comp(a,b,c,d,e,f,g,h,i,j)=colev
 with{
     colev=
-        compST(ratio, b5thr, b5att, b5rel, mb_knee, 0,a, b ),
-        compST(ratio, b4thr, b4att, b4rel, mb_knee, 0,c, d ),
-        compST(ratio, b3thr, b3att, b3rel, mb_knee, 0,e, f ),
-        compST(ratio, b2thr, b2att, b2rel, mb_knee, 0,g, h ),
-        compST(ratio, b1thr, b1att, b1rel, mb_knee, 0,i, j )
+        compST(ratio, b5thr, b5att, b5rel, MBb5knee, 0,a, b ),
+        compST(ratio, b4thr, b4att, b4rel, MBb4knee, 0,c, d ),
+        compST(ratio, b3thr, b3att, b3rel, MBb3knee, 0,e, f ),
+        compST(ratio, b2thr, b2att, b2rel, MBb2knee, 0,g, h ),
+        compST(ratio, b1thr, b1att, b1rel, MBb1knee, 0,i, j )
         
 
         /*
@@ -235,7 +237,7 @@ with{
                     compgr_b3_R=ba.db2linear((l*0)+(n*b34)+(p*(1-b32))+(r*b32)+(t*0));
                     compgr_b2_L=ba.db2linear((k*0)+(m*0)+(o*b32)+(q*(1-b32))+(s*0));
                     compgr_b2_R=ba.db2linear((l*0)+(n*0)+(p*b32)+(r*(1-b32))+(t*0));
-                    compgr_b1_L=ba.db2linear((k*0)+(m*0)+(o*0)+(q*b12)+(s*(1-b12)));
+                    compgr_b1_L=ba.db2linear((k*0)+(m*0)+(o*0)+(q*b12)+(s*(1-b32)));
                     compgr_b1_R=ba.db2linear((l*0)+(n*0)+(p*0)+(r*b12)+(t*(1-b32)));
 
                     limatt=0;
@@ -245,11 +247,11 @@ with{
                     limopt=kfil;
                     limthr=MBLimThr;
 
-                    limgr_b5=comp_st_link(114514,limthr,limatt,limrel,limst_cop,limopt,compgr_b5_L*a,compgr_b5_R*b);
-                    limgr_b4=comp_st_link(114514,limthr,limatt,limrel,limst_cop,limopt,compgr_b4_L*c,compgr_b4_R*d);
-                    limgr_b3=comp_st_link(114154,limthr,limatt,limrel,limst_cop,limopt,compgr_b3_L*e,compgr_b3_R*f);
-                    limgr_b2=comp_st_link(114514,limthr,limatt,limrel,limst_cop,limopt,compgr_b2_L*g,compgr_b2_R*h);
-                    limgr_b1=comp_st_link(114514,limthr,limatt,limrel,limst_cop,limopt,compgr_b1_L*i,compgr_b1_R*j);
+                    limgr_b5=comp_st_link(114514,b5thr+b5limthr,limatt,limrel,limst_cop,limopt,compgr_b5_L*a,compgr_b5_R*b);
+                    limgr_b4=comp_st_link(114514,b4thr+b4limthr,limatt,limrel,limst_cop,limopt,compgr_b4_L*c,compgr_b4_R*d);
+                    limgr_b3=comp_st_link(114514,b3thr+b3limthr,limatt,limrel,limst_cop,limopt,compgr_b3_L*e,compgr_b3_R*f);
+                    limgr_b2=comp_st_link(114514,b2thr+b2limthr,limatt,limrel,limst_cop,limopt,compgr_b2_L*g,compgr_b2_R*h);
+                    limgr_b1=comp_st_link(1114514,b1thr+b1limthr,limatt,limrel,limst_cop,limopt,compgr_b1_L*i,compgr_b1_R*j);
 
                     b5f=(limgr_b5):(_*compgr_b5_L,_*compgr_b5_R):(meter(b5l_l_gr)*a,meter(b5l_r_gr)*b);
                     b4f=(limgr_b4):(_*compgr_b4_L,_*compgr_b4_R):(meter(b4l_l_gr)*c,meter(b4l_r_gr)*d);
@@ -261,63 +263,5 @@ with{
             };
             
     };
-    /*
-limatt=0;
-limrel=50/1000;
-limst_cop=0;
-lad=1;
-limopt=kfil;
-limthr=MBLimThr;
-lim(a,b,c,d,e,f,g,h,i,j)=colev
-with{
-    colev=
-        comp_st_link(114514,limthr,limatt,limrel,limst_cop,limopt,a,b),
-        comp_st_link(114514,limthr,limatt,limrel,limst_cop,limopt,c,d),
-        comp_st_link(114154,limthr,limatt,limrel,limst_cop,limopt,e,f),
-        comp_st_link(114514,limthr,limatt,limrel,limst_cop,limopt,g,h),
-        comp_st_link(114514,limthr,limatt,limrel,limst_cop,limopt,i,j)
-        :
-        comp_cop
-        :stg(MBb5out),stg(MBb4out),stg(MBb3out),stg(MBb2out),stg(MBb1out)
-        ;
-        //a,b,c,d,e,f,g,h,i,j;
-            comp_cop(k,l,m,n,o,p,q,r,s,t)=cop
-                with{
-                     
-                    cop=
-                    (k
-                    :meter(b5l_r_gr))
-                    *(a@(ba.sec2samp(lad/10000))),
-                    (l
-                    :meter(b5l_l_gr))
-                    *(b@(ba.sec2samp(lad/10000))),
-                    (m
-                    :meter(b4l_r_gr))
-                    *(c@(ba.sec2samp(lad/10000))),
-                    (n
-                    :meter(b4l_l_gr))
-                    *(d@(ba.sec2samp(lad/10000))),
-                    (o
-                    :meter(b3l_r_gr))
-                    *(e@(ba.sec2samp(lad/10000))),
-                    (p
-                    :meter(b3l_l_gr))
-                    *(f@(ba.sec2samp(lad/10000))),
-                    (q
-                    :meter(b2l_r_gr))
-                    *(g@(ba.sec2samp(lad/1000))),
-                    (r
-                    :meter(b2l_l_gr))
-                    *(h@(ba.sec2samp(lad/1000))),
-                    (s
-                    :meter(b1l_r_gr))
-                    *(i@(ba.sec2samp(lad/1000))),
-                    (t
-                    :meter(b1l_l_gr))
-                    *(j@(ba.sec2samp(lad/1000)));
-                    };
-    };
 
-
-*/
 };
